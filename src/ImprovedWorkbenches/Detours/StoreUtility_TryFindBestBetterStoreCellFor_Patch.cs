@@ -20,7 +20,7 @@ namespace ImprovedWorkbenches
             if (bill.GetStoreMode() != BillStoreModeDefOf.BestStockpile)
                 return true;
 
-            var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetExtendedDataFor(bill);
+            var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetOrCreateExtendedDataFor(bill);
             if (extendedBillData == null)
                 return true;
 

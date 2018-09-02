@@ -16,63 +16,34 @@ namespace ImprovedWorkbenches
             if (!ExtendedBillDataStorage.CanOutputBeFiltered(bill))
                 return true;
 
-            var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetExtendedDataFor(bill);
-            if (extendedBillData == null)
-                return true;
-
-            var thingCountClass = bill.recipe.products.First();
-            var productThingDef = thingCountClass.thingDef;
-
             var billMap = bill.Map;
-
-            if (!statFilterWrapper.ShouldCheckInventory(productThingDef))
-                return false;
 
             // Find player pawns to check inventories of
             var playerFactionPawnsToCheck = new List<Pawn>();
-            if (!statFilterWrapper.ShouldCheckAway(productThingDef))
+            if (bill.includeEquipped)
             {
-                // Only check bill map, spawned pawns only
-                playerFactionPawnsToCheck.AddRange(billMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer)
-                    //Filter out prisoners, but include animals (for inventory)
-                    .Where(p => p.IsFreeColonist || !p.IsColonist));
-            }
-            else
-            {
-                // Given a colonist or animal from the player faction, check if its home map
-                // is the bill's map.
-                bool IsPlayerPawnFromBillMap(Pawn pawn)
-                {
-                    if (!pawn.IsFreeColonist && pawn.RaceProps.Humanlike)
-                        return false;
-
-                    // Assumption: pawns transferring between colonies will "settle"
-                    // in the destination.
-
-                    return pawn.Map == billMap || pawn.GetOriginMap() == billMap;
-                }
-
-                // Include all colonists and colony animals, unspawned (transport pods, cryptosleep, etc.)
-                // in all maps.
-                foreach (Map otherMap in Find.Maps)
-                {
-                    playerFactionPawnsToCheck.AddRange(
-                        otherMap.mapPawns.PawnsInFaction(Faction.OfPlayer)
-                            .Where(IsPlayerPawnFromBillMap));
-                }
-
-                // and caravans
-                playerFactionPawnsToCheck.AddRange(Find.WorldPawns.AllPawnsAlive
-                    // OriginMap is only set on pawns we care about
-                    .Where(p => p.GetOriginMap() == billMap));
+                // Fix for vanilla not counting items being hauled by colonists or animals
+                playerFactionPawnsToCheck.AddRange(
+                    billMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer).Where(p => p.IsFreeColonist && !p.IsColonist));
             }
 
+            if (bill.includeEquipped)
+            {
+                var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetExtendedDataFor(bill);
+                if (extendedBillData != null && extendedBillData.CountAway)
+                {
+                    PopulatePawnsCurrentlyAway(billMap, playerFactionPawnsToCheck);
+                }
+            }
+
+            var thingCountClass = bill.recipe.products.First();
+            var productThingDef = thingCountClass.thingDef;
 
             // Helper function to count matching items in inventory lists
             int CountMatchingThingsIn(IEnumerable<Thing> things)
             {
                 var count = 0;
-                foreach (Thing thing in things)
+                foreach (var thing in things)
                 {
                     Thing item = thing.GetInnerIfMinified();
                     if (item.def != productThingDef)
@@ -107,6 +78,39 @@ namespace ImprovedWorkbenches
             }
 
             return false;
+        }
+
+        private static void PopulatePawnsCurrentlyAway(Map billMap, List<Pawn> playerFactionPawnsToCheck)
+        {
+            // Given a colonist or animal from the player faction, check if its home map
+            // is the bill's map.
+            bool IsPlayerPawnFromBillMap(Pawn pawn)
+            {
+                if (!pawn.IsFreeColonist && pawn.RaceProps.Humanlike)
+                    return false;
+
+                // Assumption: pawns transferring between colonies will "settle"
+                // in the destination.
+
+                return pawn.Map == billMap || pawn.GetOriginMap() == billMap;
+            }
+
+            // Include all colonists and colony animals, unspawned (transport pods, cryptosleep, etc.)
+            // in all maps other than current.
+            foreach (var otherMap in Find.Maps)
+            {
+                if (otherMap == billMap)
+                    continue;
+
+                playerFactionPawnsToCheck.AddRange(
+                    otherMap.mapPawns.PawnsInFaction(Faction.OfPlayer)
+                        .Where(IsPlayerPawnFromBillMap));
+            }
+
+            // and caravans
+            playerFactionPawnsToCheck.AddRange(Find.WorldPawns.AllPawnsAlive
+                // OriginMap is only set on pawns we care about
+                .Where(p => p.GetOriginMap() == billMap));
         }
     }
 }

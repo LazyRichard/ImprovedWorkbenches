@@ -40,19 +40,26 @@ namespace ImprovedWorkbenches
             }
         }
 
-        // Return the associate extended data for a given bill, creating a new association
-        // if required.
+        // Return the associate extended data for a given bill, if found.
         public ExtendedBillData GetExtendedDataFor(Bill_Production bill)
         {
-
             var loadId = GetBillId(bill);
-            if (_store.TryGetValue(loadId, out ExtendedBillData data))
+            return _store.TryGetValue(loadId, out ExtendedBillData data) ? data : null;
+        }
+
+        // Return the associate extended data for a given bill, creating a new association
+        // if required.
+        public ExtendedBillData GetOrCreateExtendedDataFor(Bill_Production bill)
+        {
+            var data = GetExtendedDataFor(bill);
+            if (data != null)
             {
                 return data;
             }
 
             var newExtendedData = new ExtendedBillData();
 
+            var loadId = GetBillId(bill);
             _store[loadId] = newExtendedData;
             return newExtendedData;
         }
@@ -177,12 +184,12 @@ namespace ImprovedWorkbenches
                 destinationBill.unpauseWhenYouHave = sourceBill.unpauseWhenYouHave;
             }
 
-            var sourceExtendedData = GetExtendedDataFor(sourceBill);
+            var sourceExtendedData = GetOrCreateExtendedDataFor(sourceBill);
 
             if (sourceExtendedData == null)
                 return;
 
-            var destinationExtendedData = GetExtendedDataFor(destinationBill);
+            var destinationExtendedData = GetOrCreateExtendedDataFor(destinationBill);
 
             destinationExtendedData?.CloneFrom(sourceExtendedData, !preserveTargetProduct);
         }

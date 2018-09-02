@@ -33,7 +33,7 @@ namespace ImprovedWorkbenches
         private static void ShowCustomTakeToStockpileMenu(Bill_Production billRaw, Rect inRect)
         {
             var extendedBillDataStorage = Main.Instance.GetExtendedBillDataStorage();
-            var extendedBillData = extendedBillDataStorage.GetExtendedDataFor(billRaw);
+            var extendedBillData = extendedBillDataStorage.GetOrCreateExtendedDataFor(billRaw);
             if (extendedBillData == null)
                 return;
 
@@ -101,7 +101,7 @@ namespace ImprovedWorkbenches
             var extendedBillDataStorage = Main.Instance.GetExtendedBillDataStorage();
             extendedBillDataStorage.MirrorBillToLinkedBills(billRaw);
 
-            var extendedBillData = extendedBillDataStorage.GetExtendedDataFor(billRaw);
+            var extendedBillData = extendedBillDataStorage.GetOrCreateExtendedDataFor(billRaw);
             if (extendedBillData == null)
                 return;
 

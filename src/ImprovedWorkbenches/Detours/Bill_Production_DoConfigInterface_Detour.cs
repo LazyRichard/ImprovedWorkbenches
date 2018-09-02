@@ -36,7 +36,7 @@ namespace ImprovedWorkbenches
             if (Widgets.ButtonImage(storeModeRect, storeModeImage, baseColor))
             {
                 __instance.storeMode = nextStoreMode;
-                var extendedBillData = extendedBillDataStorage.GetExtendedDataFor(__instance);
+                var extendedBillData = extendedBillDataStorage.GetOrCreateExtendedDataFor(__instance);
                 extendedBillData?.RemoveTakeToStockpile();
             }
             TooltipHandler.TipRegion(storeModeRect, tip);
