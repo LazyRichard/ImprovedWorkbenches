@@ -23,59 +23,7 @@ namespace ImprovedWorkbenches
             var thingCountClass = bill.recipe.products.First();
             var productThingDef = thingCountClass.thingDef;
 
-            var statFilterWrapper = new StatFilterWrapper(extendedBillData);
-
-            if (!statFilterWrapper.IsAnyFilteringNeeded(productThingDef))
-                return true;
-
-
             var billMap = bill.Map;
-            var billIngredientFilter = bill.ingredientFilter;
-            __result = 0;
-            if (productThingDef.Minifiable)
-            {
-                // Minified items must be counted separately, to differentiate them from installed items.
-
-                var minifiedThings = billMap.listerThings.ThingsInGroup(ThingRequestGroup.MinifiedThing);
-                foreach (var thing in minifiedThings)
-                {
-                    var minifiedThing = (MinifiedThing)thing;
-                    var innerThing = minifiedThing.InnerThing;
-                    if (innerThing.def == productThingDef &&
-                        statFilterWrapper.DoesThingOnMapMatchFilter(billIngredientFilter, innerThing) &&
-                        statFilterWrapper.DoesThingOnMapMatchFilter(billIngredientFilter, minifiedThing))
-                    {
-                        __result++;
-                    }
-                }
-            }
-
-            SpecialThingFilterWorker_NonDeadmansApparel nonDeadmansApparelFilter =
-                statFilterWrapper.TryGetDeadmanFilter(productThingDef);
-
-            if (statFilterWrapper.ShouldCheckMap(productThingDef))
-            {
-                // Count items on the ground, in shelves, etc.
-
-                var thingList = billMap.listerThings.ThingsOfDef(productThingDef).ToList();
-                foreach (var thing in thingList)
-                {
-                    if (!statFilterWrapper.DoesThingOnMapMatchFilter(billIngredientFilter, thing))
-                        continue;
-
-                    if (nonDeadmansApparelFilter != null && !nonDeadmansApparelFilter.Matches(thing))
-                        continue;
-
-                    __result += thing.stackCount;
-                }
-            }
-            else if (productThingDef.CountAsResource)
-            {
-                // Above clause will count "resource" type items in a specific stockpile, if
-                // UsesCountingStockpile() is true. If it isn't, let the vanilla code count
-                // resoucres in all stockpiles.
-                __result += billMap.resourceCounter.GetCount(productThingDef);
-            }
 
             if (!statFilterWrapper.ShouldCheckInventory(productThingDef))
                 return false;
