@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Net;
 using Harmony;
-using ImprovedWorkbenches.Filtering;
 using RimWorld;
 using Verse;
 
@@ -40,9 +39,13 @@ namespace ImprovedWorkbenches
                 return;
 
 
-            // Look for matching items in found colonist inventories
-            foreach (var pawn in playerFactionPawnsToCheck)
+            // Look for matching items in colonists and animals away from base
+            foreach (var pawn in Find.WorldPawns.AllPawnsAlive)
             {
+                if (pawn.GetOriginMap() != billMap)
+                    // OriginMap is only set on our pawns who are away from base
+                    continue;
+
                 if (pawn.apparel != null)
                     __result += CountMatchingThingsIn(pawn.apparel.WornApparel.Cast<Thing>(), __instance, bill, productThingDef);
 
@@ -73,39 +76,5 @@ namespace ImprovedWorkbenches
 
             return count;
         }
-
-
-        private static IEnumerable<Pawn> PopulatePawnsCurrentlyAway(Map billMap, List<Pawn> playerFactionPawnsToCheck)
-        {
-            // Given a colonist or animal from the player faction, check if its home map
-            // is the bill's map.
-            bool IsPlayerPawnFromBillMap(Pawn pawn)
-            {
-                if (!pawn.IsFreeColonist && pawn.RaceProps.Humanlike)
-                    return false;
-
-                // Assumption: pawns transferring between colonies will "settle"
-                // in the destination.
-
-                return pawn.Map == billMap || pawn.GetOriginMap() == billMap;
-            }
-
-            // Include all colonists and colony animals, unspawned (transport pods, cryptosleep, etc.)
-            // in all maps other than current.
-            foreach (var otherMap in Find.Maps)
-            {
-                if (otherMap == billMap)
-                    continue;
-
-                playerFactionPawnsToCheck.AddRange(
-                    otherMap.mapPawns.PawnsInFaction(Faction.OfPlayer)
-                        .Where(IsPlayerPawnFromBillMap));
-            }
-
-            // and caravans
-            playerFactionPawnsToCheck.AddRange(Find.WorldPawns.AllPawnsAlive
-                // OriginMap is only set on pawns we care about
-                .Where(p => p.GetOriginMap() == billMap));
-        }
-    }
+   }
 }
