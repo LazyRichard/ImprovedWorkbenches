@@ -9,19 +9,11 @@ namespace ImprovedWorkbenches
     {
         public ThingFilter OutputFilter = new ThingFilter();
         public bool CountAway;
-        public bool CountInstalled;
-        public bool UseInputFilter;
-        public Pawn Worker;
         public string Name;
 
         public bool BillMapFoundInSave = true;
 
         private Map BillMap;
-        private Zone_Stockpile _countingStockpile;
-        private string _countingStockpileName = "null";
-
-        private Zone_Stockpile _takeToStockpile;
-        private string _takeToStockpileName = "null";
 
         public ExtendedBillData()
         {
