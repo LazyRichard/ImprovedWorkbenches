@@ -53,11 +53,6 @@ namespace ImprovedWorkbenches
                 "dropOnFloorByDefault", "IW.DropOnFloorByDefault".Translate(),
                 "IW.DropOnFloorByDefaultDesc".Translate(), false);
 
-            _showExtraButtons = Settings.GetHandle(
-                "showExtraButtons", "IW.ShowExtraUIButtons".Translate(),
-                "IW.ShowExtraUIButtonsDesc".Translate(), true);
-
-
             // Integration with other mods
 
             IntegrateWithOutfitter();
@@ -163,11 +158,6 @@ namespace ImprovedWorkbenches
             return _dropOnFloorByDefault;
         }
 
-        public bool ShouldShowExtraButtons()
-        {
-            return _showExtraButtons && !_isPrisonLaborLoaded;
-        }
-
         public void OnProductionDialogBeingShown()
         {
             IsRootBillFilterBeingDrawn = _showIngredientCount;
@@ -203,8 +193,6 @@ namespace ImprovedWorkbenches
         private SettingHandle<bool> _mirrorSuspendedStatus;
 
         private SettingHandle<bool> _dropOnFloorByDefault;
-
-        private SettingHandle<bool> _showExtraButtons;
 
         private ExtendedBillDataStorage _extendedBillDataStorage;
 

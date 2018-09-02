@@ -14,7 +14,7 @@ namespace ImprovedWorkbenches
             if (!Main.Instance.IsRootBillFilterBeingDrawn)
                 return;
 
-            var map = Find.VisibleMap;
+            var map = Find.CurrentMap;
             var stuffCount = tDef.CountAsResource
                 ? map.resourceCounter.GetCount(tDef)
                 : map.listerThings.ThingsOfDef(tDef).Count;

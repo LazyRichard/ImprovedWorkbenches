@@ -204,7 +204,7 @@ namespace ImprovedWorkbenches
             }
 
             // No map given, look in all maps, starting with current map, for performance
-            var mapsToCheck = new List<Map>() {Find.VisibleMap};
+            var mapsToCheck = new List<Map>() {Find.CurrentMap};
             mapsToCheck.AddRange(Find.Maps);
             foreach (Map someMap in mapsToCheck)
             {

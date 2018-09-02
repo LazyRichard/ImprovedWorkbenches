@@ -43,7 +43,7 @@ namespace ImprovedWorkbenches
 
             var storeRect = new Rect(middleColumn + 3f, inRect.yMin + 114f,
                 columnWidth, buttonHeight);
-            var allStockpiles = Find.VisibleMap.zoneManager.AllZones.OfType<Zone_Stockpile>();
+            var allStockpiles = Find.CurrentMap.zoneManager.AllZones.OfType<Zone_Stockpile>();
 
             if (Widgets.ButtonText(storeRect, "null"))
             {
@@ -239,64 +239,8 @@ namespace ImprovedWorkbenches
             if (billRaw.repeatMode != BillRepeatModeDefOf.TargetCount)
                 return;
 
-            if (Main.Instance.ShouldShowExtraButtons())
-            {
-                var keyboardRect = new Rect(middleColumn + 90f, inRect.yMin + 208f, 24f, 24f);
-                void TargetCountSetter(int i)
-                {
-                    billRaw.targetCount = i;
-                    if (billRaw.unpauseWhenYouHave >= billRaw.targetCount)
-                        billRaw.unpauseWhenYouHave = billRaw.targetCount - 1;
-                }
-
-                // Manual entry of target
-                if (Widgets.ButtonImage(keyboardRect, Resources.Rename))
-                {
-                    Find.WindowStack.Add(new Dialog_NumericEntry(
-                        billRaw.targetCount,
-                        i => i > 0,
-                        TargetCountSetter));
-                }
-                TooltipHandler.TipRegion(keyboardRect, "IW.RenameTip".Translate());
-            }
-
             const float buttonHeight = 26f;
             const float smallButtonHeight = 24f;
-
-            // "Unpause when" level adjustment buttons
-            if (billRaw.pauseWhenSatisfied && Main.Instance.ShouldShowExtraButtons())
-            {
-                var buttonWidth = 42f;
-                var minusOneRect = new Rect(middleColumn, inRect.height - 70, buttonWidth, smallButtonHeight);
-                if (Widgets.ButtonText(minusOneRect, "-1"))
-                {
-                    if (billRaw.unpauseWhenYouHave > 0)
-                    {
-                        billRaw.unpauseWhenYouHave--;
-                    }
-                }
-
-                var plusOneRect = new Rect(minusOneRect);
-                plusOneRect.xMin += buttonWidth + 2f;
-                plusOneRect.xMax += buttonWidth + 2f;
-                if (Widgets.ButtonText(plusOneRect, "+1"))
-                {
-                    if (billRaw.unpauseWhenYouHave < billRaw.targetCount - 1)
-                    {
-                        billRaw.unpauseWhenYouHave++;
-                    }
-                }
-
-                var keyboardRect = new Rect(plusOneRect.xMax + 2f, plusOneRect.yMin, 24f, 24f);
-                if (Widgets.ButtonImage(keyboardRect, Resources.Rename))
-                {
-                    Find.WindowStack.Add(new Dialog_NumericEntry(
-                        billRaw.unpauseWhenYouHave,
-                        i => i < billRaw.targetCount,
-                        i => billRaw.unpauseWhenYouHave = i));
-                }
-                TooltipHandler.TipRegion(keyboardRect, "IW.RenameTip".Translate());
-            }
 
             var y = inRect.height - 245f + Text.LineHeight;
             // Restrict counting to specific stockpile
@@ -307,7 +251,7 @@ namespace ImprovedWorkbenches
                     ? "IW.CountInText".Translate() + " " + extendedBillData.GetCountingStockpile().label
                     : anyStockpileText;
 
-                var map = Find.VisibleMap;
+                var map = Find.CurrentMap;
                 var allStockpiles =
                     map.zoneManager.AllZones.OfType<Zone_Stockpile>().ToList();
 
@@ -460,7 +404,7 @@ namespace ImprovedWorkbenches
         private static IEnumerable<Pair<Pawn, SkillRecord>> GetAllowedWorkersWithSkillLevel(
             Bill bill)
         {
-            var validPawns = Find.VisibleMap.mapPawns.FreeColonists;
+            var validPawns = Find.CurrentMap.mapPawns.FreeColonists;
             var thing = bill.billStack?.billGiver as Thing;
             if (thing == null)
                 return GetPawnsForUnskilledJob(validPawns);
@@ -473,7 +417,7 @@ namespace ImprovedWorkbenches
             if (workTypeDef == null)
                 return GetPawnsForUnskilledJob(validPawns);
 
-            validPawns = Find.VisibleMap.mapPawns.FreeColonists.Where(
+            validPawns = Find.CurrentMap.mapPawns.FreeColonists.Where(
                 p => p.workSettings.WorkIsActive(workTypeDef));
 
             var workSkill = bill.recipe?.workSkill;
