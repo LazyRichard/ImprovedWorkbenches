@@ -24,7 +24,7 @@ namespace ImprovedWorkbenches
             var storeModeImage = Resources.BestStockpile;
             var nextStoreMode = BillStoreModeDefOf.DropOnFloor;
             var tip = "IW.ClickToDropTip".Translate();
-            if (__instance.storeMode == BillStoreModeDefOf.DropOnFloor)
+            if (__instance.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)
             {
                 storeModeImage = Resources.DropOnFloor;
                 nextStoreMode = BillStoreModeDefOf.BestStockpile;
@@ -32,12 +32,10 @@ namespace ImprovedWorkbenches
             }
 
             var extendedBillDataStorage = Main.Instance.GetExtendedBillDataStorage();
-            var storeModeRect = new Rect(baseRect.xMax - 80f, baseRect.y, 24f, 24f);
+            var storeModeRect = new Rect(baseRect.xMax - 110f, baseRect.y, 24f, 24f);
             if (Widgets.ButtonImage(storeModeRect, storeModeImage, baseColor))
             {
-                __instance.storeMode = nextStoreMode;
-                var extendedBillData = extendedBillDataStorage.GetOrCreateExtendedDataFor(__instance);
-                extendedBillData?.RemoveTakeToStockpile();
+                __instance.SetStoreMode(nextStoreMode);
             }
             TooltipHandler.TipRegion(storeModeRect, tip);
 
