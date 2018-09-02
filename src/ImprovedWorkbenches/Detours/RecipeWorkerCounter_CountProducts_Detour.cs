@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Harmony;
 using ImprovedWorkbenches.Filtering;
 using RimWorld;
@@ -21,20 +22,23 @@ namespace ImprovedWorkbenches
 
             var billMap = bill.Map;
 
-            // Find player pawns to check inventories of
-            var playerFactionPawnsToCheck = new List<Pawn>();
-
+            var productThingDef = bill.recipe.products.First().thingDef;
             // Fix for vanilla not counting items being hauled by colonists or animals
-            playerFactionPawnsToCheck.AddRange(
-                billMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer).Where(p => p.IsFreeColonist || !p.IsColonist));
-
-            var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetExtendedDataFor(bill);
-            if (extendedBillData != null && extendedBillData.CountAway)
+            foreach (var pawn in billMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
             {
-                PopulatePawnsCurrentlyAway(billMap, playerFactionPawnsToCheck);
+                // Ignore prisoners, include animals
+                if (!(pawn.IsFreeColonist || !pawn.IsColonist))
+                    continue;
+
+                if (pawn.carryTracker != null)
+                    __result += CountMatchingThingsIn(
+                        pawn.carryTracker.innerContainer, __instance, bill,productThingDef);
             }
 
-            var productThingDef = bill.recipe.products.First().thingDef;
+            var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetExtendedDataFor(bill);
+            if (extendedBillData == null || !extendedBillData.CountAway)
+                return;
+
 
             // Look for matching items in found colonist inventories
             foreach (var pawn in playerFactionPawnsToCheck)
@@ -71,7 +75,7 @@ namespace ImprovedWorkbenches
         }
 
 
-        private static void PopulatePawnsCurrentlyAway(Map billMap, List<Pawn> playerFactionPawnsToCheck)
+        private static IEnumerable<Pawn> PopulatePawnsCurrentlyAway(Map billMap, List<Pawn> playerFactionPawnsToCheck)
         {
             // Given a colonist or animal from the player faction, check if its home map
             // is the bill's map.
