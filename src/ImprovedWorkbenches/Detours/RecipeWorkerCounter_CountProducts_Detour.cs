@@ -11,74 +11,65 @@ namespace ImprovedWorkbenches
     public static class RecipeWorkerCounter_CountProducts_Detour
     {
         [HarmonyPrefix]
-        static bool Prefix(ref Bill_Production bill, ref int __result)
+        public static void Postfix(ref RecipeWorkerCounter __instance, ref int __result, ref Bill_Production bill)
         {
+            if (!bill.includeEquipped)
+                return;
+
             if (!ExtendedBillDataStorage.CanOutputBeFiltered(bill))
-                return true;
+                return;
 
             var billMap = bill.Map;
 
             // Find player pawns to check inventories of
             var playerFactionPawnsToCheck = new List<Pawn>();
-            if (bill.includeEquipped)
+
+            // Fix for vanilla not counting items being hauled by colonists or animals
+            playerFactionPawnsToCheck.AddRange(
+                billMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer).Where(p => p.IsFreeColonist || !p.IsColonist));
+
+            var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetExtendedDataFor(bill);
+            if (extendedBillData != null && extendedBillData.CountAway)
             {
-                // Fix for vanilla not counting items being hauled by colonists or animals
-                playerFactionPawnsToCheck.AddRange(
-                    billMap.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer).Where(p => p.IsFreeColonist && !p.IsColonist));
+                PopulatePawnsCurrentlyAway(billMap, playerFactionPawnsToCheck);
             }
 
-            if (bill.includeEquipped)
-            {
-                var extendedBillData = Main.Instance.GetExtendedBillDataStorage().GetExtendedDataFor(bill);
-                if (extendedBillData != null && extendedBillData.CountAway)
-                {
-                    PopulatePawnsCurrentlyAway(billMap, playerFactionPawnsToCheck);
-                }
-            }
-
-            var thingCountClass = bill.recipe.products.First();
-            var productThingDef = thingCountClass.thingDef;
-
-            // Helper function to count matching items in inventory lists
-            int CountMatchingThingsIn(IEnumerable<Thing> things)
-            {
-                var count = 0;
-                foreach (var thing in things)
-                {
-                    Thing item = thing.GetInnerIfMinified();
-                    if (item.def != productThingDef)
-                        continue;
-
-                    if (!statFilterWrapper.DoesThingMatchFilter(billIngredientFilter, item))
-                        continue;
-
-                    if (nonDeadmansApparelFilter != null && !nonDeadmansApparelFilter.Matches(item))
-                        continue;
-
-                    count += item.stackCount;
-                }
-
-                return count;
-            }
+            var productThingDef = bill.recipe.products.First().thingDef;
 
             // Look for matching items in found colonist inventories
             foreach (var pawn in playerFactionPawnsToCheck)
             {
                 if (pawn.apparel != null)
-                    __result += CountMatchingThingsIn(pawn.apparel.WornApparel.Cast<Thing>());
+                    __result += CountMatchingThingsIn(pawn.apparel.WornApparel.Cast<Thing>(), __instance, bill, productThingDef);
 
                 if (pawn.equipment != null)
-                    __result += CountMatchingThingsIn(pawn.equipment.AllEquipmentListForReading.Cast<Thing>());
+                    __result += CountMatchingThingsIn(pawn.equipment.AllEquipmentListForReading.Cast<Thing>(), __instance, bill, productThingDef);
 
                 if (pawn.inventory != null)
-                    __result += CountMatchingThingsIn(pawn.inventory.innerContainer);
+                    __result += CountMatchingThingsIn(pawn.inventory.innerContainer, __instance, bill, productThingDef);
 
                 if (pawn.carryTracker != null)
-                    __result += CountMatchingThingsIn(pawn.carryTracker.innerContainer);
+                    __result += CountMatchingThingsIn(pawn.carryTracker.innerContainer, __instance, bill, productThingDef);
+            }
+        }
+
+        // Helper function to count matching items in inventory lists
+        private static int CountMatchingThingsIn(IEnumerable<Thing> things, RecipeWorkerCounter counterClass,
+            Bill_Production bill, ThingDef productThingDef)
+        {
+            var count = 0;
+            foreach (var thing in things)
+            {
+                Thing item = thing.GetInnerIfMinified();
+                if (counterClass.CountValidThing(thing, bill, productThingDef))
+                {
+                    count += item.stackCount;
+                }
             }
 
-            return false;
+            return count;
         }
+
 
         private static void PopulatePawnsCurrentlyAway(Map billMap, List<Pawn> playerFactionPawnsToCheck)
         {
