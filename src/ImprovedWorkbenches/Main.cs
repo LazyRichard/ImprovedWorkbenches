@@ -29,10 +29,6 @@ namespace ImprovedWorkbenches
                 "expandBillsTab", "IW.AutoOpenBillTabLabel".Translate(),
                 "IW.AutoOpenBillTabDesc".Translate(), true);
 
-            _showIngredientCount = Settings.GetHandle(
-                "showIngredientCount", "IW.ShowItemCountInFilterLabel".Translate(),
-                "IW.ShowItemCountInFilterDesc".Translate(), true);
-
             _enableDragToReorder = Settings.GetHandle(
                 "enableDragToReorder", "IW.EnableDragToReorder".Translate(),
                 "IW.EnableDragToReorderDesc".Translate(), true);
@@ -58,8 +54,6 @@ namespace ImprovedWorkbenches
             IntegrateWithOutfitter();
 
             IntegrateWithRimFactory();
-
-            IntegrateWithPrisonLabor();
         }
 
         private void IntegrateWithOutfitter()
@@ -118,26 +112,6 @@ namespace ImprovedWorkbenches
 
         }
 
-        private void IntegrateWithPrisonLabor()
-        {
-            _isPrisonLaborLoaded = false;
-            try
-            {
-                if (GenTypes.GetTypeInAnyAssembly("PrisonLabor.HarmonyPatches.HPatcher") != null)
-                {
-                    _isPrisonLaborLoaded = true;
-                    Logger.Message("Prison Labor detected");
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Exception while trying to detect Prison Labor:");
-                Logger.Error(e.Message);
-                Logger.Error(e.StackTrace);
-            }
-
-        }
-
         public bool ShouldExpandBillsTab()
         {
             return _expandBillsTab;
@@ -158,11 +132,6 @@ namespace ImprovedWorkbenches
             return _dropOnFloorByDefault;
         }
 
-        public void OnProductionDialogBeingShown()
-        {
-            IsRootBillFilterBeingDrawn = _showIngredientCount;
-        }
-
         public ExtendedBillDataStorage GetExtendedBillDataStorage()
         {
             return _extendedBillDataStorage;
@@ -180,13 +149,9 @@ namespace ImprovedWorkbenches
 
         public readonly BillCopyPaste BillCopyPasteHandler = new BillCopyPaste();
 
-        public bool IsRootBillFilterBeingDrawn;
-
         public override string ModIdentifier => "ImprovedWorkbenches";
 
         private SettingHandle<bool> _expandBillsTab;
-
-        private SettingHandle<bool> _showIngredientCount;
 
         private SettingHandle<bool> _enableDragToReorder;
 
@@ -195,8 +160,6 @@ namespace ImprovedWorkbenches
         private SettingHandle<bool> _dropOnFloorByDefault;
 
         private ExtendedBillDataStorage _extendedBillDataStorage;
-
-        private bool _isPrisonLaborLoaded;
 
         // RImFactory support
         private bool _isRimfactoryLoaded;

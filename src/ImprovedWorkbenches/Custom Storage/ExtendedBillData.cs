@@ -8,8 +8,6 @@ namespace ImprovedWorkbenches
     public class ExtendedBillData : IExposable
     {
         public ThingFilter OutputFilter = new ThingFilter();
-        public bool AllowDeadmansApparel;
-        public bool CountInventory;
         public bool CountAway;
         public bool CountInstalled;
         public bool UseInputFilter;
