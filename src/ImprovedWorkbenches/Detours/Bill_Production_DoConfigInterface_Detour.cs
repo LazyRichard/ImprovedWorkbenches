@@ -41,18 +41,6 @@ namespace ImprovedWorkbenches
 
             var nextButtonX = storeModeRect.xMin - 28f;
             var copyPasteHandler = Main.Instance.BillCopyPasteHandler;
-            if (copyPasteHandler.CanCopy(__instance))
-            {
-                var copyBillRect = new Rect(nextButtonX, baseRect.y, 24f, 24f);
-                if (Widgets.ButtonImage(copyBillRect, Resources.CopyButton, baseColor))
-                {
-                    copyPasteHandler.DoCopy(__instance);
-                }
-                TooltipHandler.TipRegion(copyBillRect, "IW.CopyJustBillsTip".Translate());
-
-                nextButtonX -= 28f;
-            }
-
             var pasteRect = new Rect(nextButtonX, baseRect.y, 24f, 24f);
             if (copyPasteHandler.CanPasteInto(__instance))
             {
