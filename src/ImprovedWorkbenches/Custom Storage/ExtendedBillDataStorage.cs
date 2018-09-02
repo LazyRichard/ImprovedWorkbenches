@@ -8,7 +8,7 @@ using Verse;
 
 namespace ImprovedWorkbenches
 {
-    public class ExtendedBillDataStorage : UtilityWorldObject, IExposable
+    public class ExtendedBillDataStorage : UtilityWorldObject
     {
         private Dictionary<int, ExtendedBillData> _store =
             new Dictionary<int, ExtendedBillData>();
@@ -40,37 +40,6 @@ namespace ImprovedWorkbenches
             }
         }
 
-        private void SetMapForExtendedBillData(int billIdToFind, ExtendedBillData extendedBillData)
-        {
-            if (extendedBillData.BillMapFoundInSave)
-                return;
-
-            Main.Instance.Logger.Message($"Looking for map for bill id {billIdToFind}...");
-
-            // Found a stored dataset with no BillMap. Search through all work tables
-            // for the matching bill ID for this dataset and use the map in the bill
-            // found.
-            foreach (Map someMap in Find.Maps)
-            {
-                foreach (var workTable in
-                    someMap.listerBuildings.AllBuildingsColonistOfClass<Building_WorkTable>())
-                {
-                    foreach (var bill in workTable.BillStack.Bills)
-                    {
-                        var billProduction = bill as Bill_Production;
-                        if (billProduction == null || GetBillId(billProduction) != billIdToFind)
-                            continue;
-
-                        Main.Instance.Logger.Message($"Setting Map for legacy bill store {billIdToFind}");
-                        extendedBillData.SetBillMap(billProduction.Map);
-                        return;
-                    }
-                }
-            }
-
-            Main.Instance.Logger.Warning($"Bill id {billIdToFind} not found.");
-        }
-
         // Return the associate extended data for a given bill, creating a new association
         // if required.
         public ExtendedBillData GetExtendedDataFor(Bill_Production bill)
@@ -79,13 +48,10 @@ namespace ImprovedWorkbenches
             var loadId = GetBillId(bill);
             if (_store.TryGetValue(loadId, out ExtendedBillData data))
             {
-                SetMapForExtendedBillData(loadId, data);
                 return data;
             }
 
             var newExtendedData = new ExtendedBillData();
-            if (CanOutputBeFiltered(bill))
-                newExtendedData.SetDefaultFilter(bill);
 
             _store[loadId] = newExtendedData;
             return newExtendedData;
@@ -219,24 +185,6 @@ namespace ImprovedWorkbenches
             var destinationExtendedData = GetExtendedDataFor(destinationBill);
 
             destinationExtendedData?.CloneFrom(sourceExtendedData, !preserveTargetProduct);
-        }
-
-        public void OnStockpileDeteled(Zone_Stockpile stockpile)
-        {
-            foreach (var extendedBillData in _store.Values)
-            {
-                if (extendedBillData.UsesCountingStockpile()
-                    && extendedBillData.GetCountingStockpile() == stockpile)
-                {
-                    extendedBillData.RemoveCountingStockpile();
-                }
-
-                if (extendedBillData.UsesTakeToStockpile()
-                    && extendedBillData.GetTakeToStockpile() == stockpile)
-                {
-                    extendedBillData.RemoveTakeToStockpile();
-                }
-            }
         }
 
         // Figure out if output of bill produces a "thing" we care about
