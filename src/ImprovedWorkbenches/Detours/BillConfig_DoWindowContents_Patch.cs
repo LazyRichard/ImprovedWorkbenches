@@ -6,7 +6,6 @@ using Harmony;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using ImprovedWorkbenches.Filtering;
 
 namespace ImprovedWorkbenches
 {

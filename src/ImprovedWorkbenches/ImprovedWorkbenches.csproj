@@ -56,11 +56,8 @@
     <Compile Include="Detours\Bill_Production_RepeatInfoText_Detour.cs" />
     <Compile Include="Detours\Building_Destroy_Detour.cs" />
     <Compile Include="Detours\Pawn_Spawn_Detour.cs" />
-    <Compile Include="Detours\StoreUtility_TryFindBestBetterStoreCellFor_Patch.cs" />
     <Compile Include="Detours\Widgets_ButtonImage_Detour.cs" />
-    <Compile Include="Detours\ZoneManager_DeregisterZone_Patch.cs" />
     <Compile Include="Filtering\PawnOriginalMapSaver.cs" />
-    <Compile Include="Keyboard Entry\Dialog_NumericEntry.cs" />
     <Compile Include="Custom Storage\ExtendedBillData.cs" />
     <Compile Include="Custom Storage\ExtendedBillDataStorage.cs" />
     <Compile Include="Detours\RecipeWorkerCounter_CountProducts_Detour.cs" />
