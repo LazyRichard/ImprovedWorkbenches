@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using Harmony;
 using RimWorld;
 using UnityEngine;
@@ -94,7 +91,7 @@ namespace ImprovedWorkbenches
             const float buttonHeight = 26f;
 
             var y = inRect.height - 100f + Text.LineHeight;
-            
+
             // Helper method for checkboxes
             void SimpleCheckBoxWithToolTip(string label, ref bool setting, string tip)
             {
@@ -113,11 +110,9 @@ namespace ImprovedWorkbenches
             }
 
             // Inventory Filter
-            if (StatFilterWrapper.GoesInInventory(thingDef))
+            if (billRaw.includeEquipped)
             {
-                SimpleCheckBox("CountInventory", ref extendedBillData.CountInventory);
-                if (extendedBillData.CountInventory)
-                    SimpleCheckBox("CountAway", ref extendedBillData.CountAway);
+                SimpleCheckBox("CountAway", ref extendedBillData.CountAway);
             }
         }
 
@@ -135,7 +130,7 @@ namespace ImprovedWorkbenches
 
             void Move(int direction)
             {
-                var otherBill = (Bill_Production) billStack.Bills[thisBillIndexInWorkTable + direction];
+                var otherBill = (Bill_Production)billStack.Bills[thisBillIndexInWorkTable + direction];
                 dialog.Close();
                 Find.WindowStack.Add(new Dialog_BillConfig(otherBill, workTable.Position));
             }
