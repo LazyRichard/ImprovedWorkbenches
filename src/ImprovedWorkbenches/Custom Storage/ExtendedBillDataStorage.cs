@@ -150,8 +150,7 @@ namespace ImprovedWorkbenches
 
         public void MirrorBills(Bill_Production sourceBill, Bill_Production destinationBill, bool preserveTargetProduct)
         {
-            if (!preserveTargetProduct || DoFiltersMatch(sourceBill.recipe?.fixedIngredientFilter,
-                destinationBill.recipe?.fixedIngredientFilter))
+            if (!preserveTargetProduct || DoFiltersMatch(sourceBill, destinationBill))
             {
                 if (sourceBill.ingredientFilter != null)
                     destinationBill.ingredientFilter?.CopyAllowancesFrom(sourceBill.ingredientFilter);
@@ -159,7 +158,7 @@ namespace ImprovedWorkbenches
 
             destinationBill.ingredientSearchRadius = sourceBill.ingredientSearchRadius;
             destinationBill.allowedSkillRange = sourceBill.allowedSkillRange;
-            destinationBill.storeMode = sourceBill.storeMode;
+            destinationBill.SetStoreMode(sourceBill.GetStoreMode());
             destinationBill.paused = sourceBill.paused;
 
             if (Main.Instance.ShouldMirrorSuspendedStatus())
@@ -182,6 +181,12 @@ namespace ImprovedWorkbenches
                 destinationBill.targetCount = sourceBill.targetCount;
                 destinationBill.pauseWhenSatisfied = sourceBill.pauseWhenSatisfied;
                 destinationBill.unpauseWhenYouHave = sourceBill.unpauseWhenYouHave;
+                destinationBill.includeEquipped = sourceBill.includeEquipped;
+                destinationBill.includeTainted = sourceBill.includeTainted;
+                destinationBill.includeFromZone = sourceBill.includeFromZone;
+                destinationBill.hpRange = sourceBill.hpRange;
+                destinationBill.qualityRange = sourceBill.qualityRange;
+                destinationBill.limitToAllowedStuff = sourceBill.limitToAllowedStuff;
             }
 
             var sourceExtendedData = GetOrCreateExtendedDataFor(sourceBill);
@@ -211,8 +216,11 @@ namespace ImprovedWorkbenches
             return (int)LoadIdGetter.GetValue(bill);
         }
 
-        private bool DoFiltersMatch(ThingFilter first, ThingFilter second)
+        private bool DoFiltersMatch(Bill sourceBill, Bill destinationBill)
         {
+            var first = sourceBill.recipe?.fixedIngredientFilter;
+            var second = destinationBill.recipe?.fixedIngredientFilter;
+
             if (first == null || second == null)
                 return false;
 
