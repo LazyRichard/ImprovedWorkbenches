@@ -1,4 +1,5 @@
-﻿using Harmony;
+﻿using System.Reflection;
+using Harmony;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -11,6 +12,19 @@ namespace ImprovedWorkbenches
         public static int ReorderableGroup { get; private set; }
 
         public static bool BlockButtonDraw = false;
+
+        private static readonly FieldInfo WinSizeGetter = typeof(ITab_Bills).GetField("WinSize",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        private static readonly FieldInfo PasteXGetter = typeof(ITab_Bills).GetField("PasteX",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        private static readonly FieldInfo PasteYGetter = typeof(ITab_Bills).GetField("PasteY",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        private static readonly FieldInfo PasteSizeGetter = typeof(ITab_Bills).GetField("PasteSize",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
 
         public static bool Prefix()
         {
@@ -52,11 +66,16 @@ namespace ImprovedWorkbenches
 
             var gap = 4f;
             var buttonWidth = 70f;
-            var rectCopyAll = new Rect(rect.xMin + 154f, rect.yMin, buttonWidth, 29f);
+            var winSize = (Vector2) WinSizeGetter.GetValue(null);
+            var pasteX = (float) PasteXGetter.GetValue(null);
+            var pasteY = (float) PasteYGetter.GetValue(null);
+            var pasteSize = (float) PasteSizeGetter.GetValue(null);
+            var rectCopyAll = new Rect(winSize.x - pasteX - gap - pasteSize, pasteY, pasteSize, pasteSize);
+
             var billCopyPasteHandler = Main.Instance.BillCopyPasteHandler;
             if (workTable.BillStack != null && workTable.BillStack.Count > 0)
             {
-                if (Widgets.ButtonText(rectCopyAll, "IW.CopyAllLabel".Translate()))
+                if (Widgets.ButtonImageFitted(rectCopyAll, Resources.CopyButton, Color.white))
                 {
                     billCopyPasteHandler.DoCopy(workTable);
                 }
