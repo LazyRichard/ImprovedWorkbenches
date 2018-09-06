@@ -26,6 +26,8 @@ namespace ImprovedWorkbenches
         private static readonly FieldInfo PasteSizeGetter = typeof(ITab_Bills).GetField("PasteSize",
             BindingFlags.NonPublic | BindingFlags.Static);
 
+        private static readonly Color BackgroundColor = new ColorInt(21, 25, 29).ToColor;
+        private static Rect _vanillaPasteRect;
 
         public static bool Prefix()
         {
@@ -43,6 +45,13 @@ namespace ImprovedWorkbenches
             ReorderableGroup = ReorderableWidget.NewGroup(
                 (from, to) => ReorderBillInStack(billGiver.BillStack, from, to),
                 ReorderableDirection.Vertical);
+
+            var winSize = (Vector2) WinSizeGetter.GetValue(null);
+            var pasteX = (float) PasteXGetter.GetValue(null);
+            var pasteY = (float) PasteYGetter.GetValue(null);
+            var buttonWidth = (float) PasteSizeGetter.GetValue(null);
+            _vanillaPasteRect = new Rect(winSize.x - pasteX, pasteY, buttonWidth, buttonWidth);
+            Widgets.DrawBoxSolid(_vanillaPasteRect, BackgroundColor);
 
             return true;
         }
@@ -66,11 +75,9 @@ namespace ImprovedWorkbenches
                 return;
 
             var gap = 4f;
-            var winSize = (Vector2) WinSizeGetter.GetValue(null);
-            var pasteX = (float) PasteXGetter.GetValue(null);
-            var pasteY = (float) PasteYGetter.GetValue(null);
             var buttonWidth = (float) PasteSizeGetter.GetValue(null);
-            var rectCopyAll = new Rect(winSize.x - pasteX - gap - buttonWidth, pasteY, buttonWidth, buttonWidth);
+
+            var rectCopyAll = new Rect(rect.xMin + 165f, rect.yMin, buttonWidth, 29f);
 
             var billCopyPasteHandler = Main.Instance.BillCopyPasteHandler;
             if (workTable.BillStack != null && workTable.BillStack.Count > 0)
@@ -89,7 +96,7 @@ namespace ImprovedWorkbenches
             var rectPaste = new Rect(rectCopyAll);
             rectPaste.xMin += buttonWidth + gap;
             rectPaste.xMax += buttonWidth + gap;
-            if (Widgets.ButtonImageFitted(rectPaste, Resources.PasteButton, Color.white);
+            if (Widgets.ButtonImageFitted(rectPaste, Resources.PasteButton, Color.white))
             {
                 billCopyPasteHandler.DoPasteInto(workTable, false);
             }
