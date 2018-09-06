@@ -41,11 +41,6 @@ namespace ImprovedWorkbenches
             }
         }
 
-        public bool CanCopy(Bill_Production bill)
-        {
-            return _copiedBills.Count != 1 || _copiedBills.First() != bill;
-        }
-
         public bool CanPasteInto(Building_WorkTable workTable)
         {
             if (_copiedBills.Count == 0)
@@ -58,11 +53,13 @@ namespace ImprovedWorkbenches
 
             foreach (var bill in _copiedBills)
             {
-                if (CanWorkTableDoRecipeNow(workTable, bill.recipe))
-                    return true;
+                if (!CanWorkTableDoRecipeNow(workTable, bill.recipe))
+                {
+                    return false;
+                }
             }
 
-            return false;
+            return true;
         }
 
         public bool CanPasteInto(Bill_Production targetBill)

@@ -3,6 +3,7 @@ using Harmony;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace ImprovedWorkbenches
 {
@@ -65,12 +66,11 @@ namespace ImprovedWorkbenches
                 return;
 
             var gap = 4f;
-            var buttonWidth = 70f;
             var winSize = (Vector2) WinSizeGetter.GetValue(null);
             var pasteX = (float) PasteXGetter.GetValue(null);
             var pasteY = (float) PasteYGetter.GetValue(null);
-            var pasteSize = (float) PasteSizeGetter.GetValue(null);
-            var rectCopyAll = new Rect(winSize.x - pasteX - gap - pasteSize, pasteY, pasteSize, pasteSize);
+            var buttonWidth = (float) PasteSizeGetter.GetValue(null);
+            var rectCopyAll = new Rect(winSize.x - pasteX - gap - buttonWidth, pasteY, buttonWidth, buttonWidth);
 
             var billCopyPasteHandler = Main.Instance.BillCopyPasteHandler;
             if (workTable.BillStack != null && workTable.BillStack.Count > 0)
@@ -78,6 +78,7 @@ namespace ImprovedWorkbenches
                 if (Widgets.ButtonImageFitted(rectCopyAll, Resources.CopyButton, Color.white))
                 {
                     billCopyPasteHandler.DoCopy(workTable);
+					SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 }
                 TooltipHandler.TipRegion(rectCopyAll, "IW.CopyAllTip".Translate());
             }
@@ -88,27 +89,20 @@ namespace ImprovedWorkbenches
             var rectPaste = new Rect(rectCopyAll);
             rectPaste.xMin += buttonWidth + gap;
             rectPaste.xMax += buttonWidth + gap;
-            if (Widgets.ButtonText(rectPaste, 
-                billCopyPasteHandler.IsMultipleBillsCopied() ? "IW.PasteAllLabel".Translate() : "IW.Paste".Translate()))
+            if (Widgets.ButtonImageFitted(rectPaste, Resources.PasteButton, Color.white);
             {
                 billCopyPasteHandler.DoPasteInto(workTable, false);
             }
             TooltipHandler.TipRegion(rectPaste, "IW.PasteAllTip".Translate());
 
-            var oldFont = Text.Font;
-            Text.Font = GameFont.Tiny;
-
             var rectLink = new Rect(rectPaste);
             rectLink.xMin += buttonWidth + gap;
             rectLink.xMax += buttonWidth + gap;
-            if (Widgets.ButtonText(rectLink, "IW.PasteLinkLabel".Translate()))
+            if (Widgets.ButtonImageFitted(rectLink, Resources.Link, Color.white))
             {
                 billCopyPasteHandler.DoPasteInto(workTable, true);
             }
-            TooltipHandler.TipRegion(rectLink,
-                "IW.PasteLinkTip".Translate());
-
-            Text.Font = oldFont;
+            TooltipHandler.TipRegion(rectLink, "IW.PasteLinkTip".Translate());
         }
     }
 }
