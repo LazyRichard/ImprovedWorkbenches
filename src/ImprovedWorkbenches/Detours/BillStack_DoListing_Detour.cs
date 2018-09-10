@@ -26,7 +26,6 @@ namespace ImprovedWorkbenches
         private static readonly FieldInfo PasteSizeGetter = typeof(ITab_Bills).GetField("PasteSize",
             BindingFlags.NonPublic | BindingFlags.Static);
 
-        private static readonly Color BackgroundColor = new ColorInt(21, 25, 29).ToColor;
         private static Rect _vanillaPasteRect;
 
         public static bool Prefix()
@@ -51,7 +50,18 @@ namespace ImprovedWorkbenches
             var pasteY = (float) PasteYGetter.GetValue(null);
             var buttonWidth = (float) PasteSizeGetter.GetValue(null);
             _vanillaPasteRect = new Rect(winSize.x - pasteX, pasteY, buttonWidth, buttonWidth);
-            Widgets.DrawBoxSolid(_vanillaPasteRect, BackgroundColor);
+
+            if (!(selectedThing is Building_WorkTable workTable))
+                return true;
+
+            var billCopyPasteHandler = Main.Instance.BillCopyPasteHandler;
+            if (billCopyPasteHandler.CanPasteInto(workTable))
+                return true;
+
+            if (Widgets.ButtonImageFitted(_vanillaPasteRect, Resources.PasteButton, Color.white))
+            {
+                billCopyPasteHandler.DoPasteInto(workTable, false);
+            }
 
             return true;
         }
@@ -77,7 +87,9 @@ namespace ImprovedWorkbenches
             var gap = 4f;
             var buttonWidth = (float) PasteSizeGetter.GetValue(null);
 
-            var rectCopyAll = new Rect(rect.xMin + 165f, rect.yMin, buttonWidth, 29f);
+            var rectCopyAll = new Rect(_vanillaPasteRect);
+            rectCopyAll.xMin -= (buttonWidth + gap) * 2;
+            rectCopyAll.xMax -= (buttonWidth + gap) * 2;
 
             var billCopyPasteHandler = Main.Instance.BillCopyPasteHandler;
             if (workTable.BillStack != null && workTable.BillStack.Count > 0)
@@ -93,18 +105,15 @@ namespace ImprovedWorkbenches
             if (!billCopyPasteHandler.CanPasteInto(workTable))
                 return;
 
-            var rectPaste = new Rect(rectCopyAll);
-            rectPaste.xMin += buttonWidth + gap;
-            rectPaste.xMax += buttonWidth + gap;
+            var rectPaste = new Rect(_vanillaPasteRect);
             if (Widgets.ButtonImageFitted(rectPaste, Resources.PasteButton, Color.white))
             {
                 billCopyPasteHandler.DoPasteInto(workTable, false);
             }
-            TooltipHandler.TipRegion(rectPaste, "IW.PasteAllTip".Translate());
 
             var rectLink = new Rect(rectPaste);
-            rectLink.xMin += buttonWidth + gap;
-            rectLink.xMax += buttonWidth + gap;
+            rectLink.xMin -= buttonWidth + gap;
+            rectLink.xMax -= buttonWidth + gap;
             if (Widgets.ButtonImageFitted(rectLink, Resources.Link, Color.white))
             {
                 billCopyPasteHandler.DoPasteInto(workTable, true);
