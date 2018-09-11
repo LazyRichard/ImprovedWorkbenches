@@ -49,7 +49,7 @@ namespace ImprovedWorkbenches
             if (workTable.BillStack == null || workTable.BillStack.Count >= 15)
                 return false;
 
-            _copiedBills.RemoveAll(bill => bill.DeletedOrDereferenced);
+            _copiedBills.RemoveAll(bill => bill == null || bill.DeletedOrDereferenced);
 
             foreach (var bill in _copiedBills)
             {
