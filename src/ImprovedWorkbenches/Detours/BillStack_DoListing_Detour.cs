@@ -55,7 +55,7 @@ namespace ImprovedWorkbenches
                 return true;
 
             var billCopyPasteHandler = Main.Instance.BillCopyPasteHandler;
-            if (billCopyPasteHandler.CanPasteInto(workTable))
+            if (!billCopyPasteHandler.CanPasteInto(workTable))
                 return true;
 
             if (Widgets.ButtonImageFitted(_vanillaPasteRect, Resources.PasteButton, Color.white))
@@ -87,19 +87,21 @@ namespace ImprovedWorkbenches
             var gap = 4f;
             var buttonWidth = (float) PasteSizeGetter.GetValue(null);
 
-            var rectCopyAll = new Rect(_vanillaPasteRect);
-            rectCopyAll.xMin -= (buttonWidth + gap) * 2;
-            rectCopyAll.xMax -= (buttonWidth + gap) * 2;
+            var buttonRect = new Rect(_vanillaPasteRect);
+            buttonRect.xMin -= buttonWidth + gap;
+            buttonRect.xMax -= buttonWidth + gap;
 
             var billCopyPasteHandler = Main.Instance.BillCopyPasteHandler;
             if (workTable.BillStack != null && workTable.BillStack.Count > 0)
             {
-                if (Widgets.ButtonImageFitted(rectCopyAll, Resources.CopyButton, Color.white))
+                if (Widgets.ButtonImageFitted(buttonRect, Resources.CopyButton, Color.white))
                 {
                     billCopyPasteHandler.DoCopy(workTable);
 					SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 }
-                TooltipHandler.TipRegion(rectCopyAll, "IW.CopyAllTip".Translate());
+                TooltipHandler.TipRegion(buttonRect, "IW.CopyAllTip".Translate());
+                buttonRect.xMin -= buttonWidth + gap;
+                buttonRect.xMax -= buttonWidth + gap;
             }
 
             if (!billCopyPasteHandler.CanPasteInto(workTable))
@@ -111,14 +113,11 @@ namespace ImprovedWorkbenches
                 billCopyPasteHandler.DoPasteInto(workTable, false);
             }
 
-            var rectLink = new Rect(rectPaste);
-            rectLink.xMin -= buttonWidth + gap;
-            rectLink.xMax -= buttonWidth + gap;
-            if (Widgets.ButtonImageFitted(rectLink, Resources.Link, Color.white))
+            if (Widgets.ButtonImageFitted(buttonRect, Resources.Link, Color.white))
             {
                 billCopyPasteHandler.DoPasteInto(workTable, true);
             }
-            TooltipHandler.TipRegion(rectLink, "IW.PasteLinkTip".Translate());
+            TooltipHandler.TipRegion(buttonRect, "IW.PasteLinkTip".Translate());
         }
     }
 }
